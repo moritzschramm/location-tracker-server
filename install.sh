@@ -4,9 +4,11 @@ s#!/bin/sh
 SERVER_USERNAME="control-server"
 LOCAL_MQTT_CONFIG_FILE="./config/mosquitto.conf"
 LOCAL_CONFIG_FILE="config.toml"
+LOCAL_MQTT_ACL_FILE="./config/mosquitto_acl.conf"
 
 MQTT_CONFIG_FILE="/etc/mosquitto/conf.d/custom-mosquitto.conf"
 MQTT_PASSWD_FILE="/etc/mosquitto/passwd"
+MQTT_ACL_FILE="/etc/mosquitto/acl"
 
 CERT_BITS=2048
 CERT_DAYS=365
