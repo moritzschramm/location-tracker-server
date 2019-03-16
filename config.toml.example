@@ -1,0 +1,11 @@
+host = "localhost"
+port = "8000"
+publicDir = "frontend"
+
+[mqtt]
+host = ""
+port = ""
+certFile = "certs/server.crt"
+clientId = "control-server"
+username = "control-server"
+password = ""
