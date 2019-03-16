@@ -1,4 +1,4 @@
-#!/bin/sh
+s#!/bin/sh
 
 # configuration variables
 SERVER_USERNAME="control-server"
@@ -28,7 +28,7 @@ cp $LOCAL_MQTT_CONFIG_FILE $MQTT_CONFIG_FILE
 echo "Creating user and password"
 PASSWD=$(head -c30 /dev/urandom | base64)
 cp config.toml.example $LOCAL_CONFIG_FILE
-sed "s/password = \"\"/$PASSWD/g" $LOCAL_CONFIG_FILE
+sed -i "s/password = \"\"/$PASSWD/g" $LOCAL_CONFIG_FILE
 echo "" > $MQTT_PASSWD_FILE
 mosquitto_passwd -b $MQTT_PASSWD_FILE $SERVER_USERNAME $PASSWD	# create passwd file
 PASSWD=""
