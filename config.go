@@ -20,6 +20,7 @@ type MQTTConfig struct {
 	ClientId string
 	Username string
 	Password string
+	PasswdFile string
 }
 
 func loadConfig() {
