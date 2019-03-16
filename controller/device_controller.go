@@ -13,6 +13,7 @@ import (
 
 type DeviceController struct {
 	DB *sql.DB
+	Mqtt MQTTUser
 }
 
 func (controller *DeviceController) NewDevice(res http.ResponseWriter, req *http.Request, _ httprouter.Params) {
@@ -21,8 +22,15 @@ func (controller *DeviceController) NewDevice(res http.ResponseWriter, req *http
 	password := req.FormValue("password")
 	device := model.MakeDevice(controller.DB, password)
 
-	// update mosquitto passwd and acl file
+	// update mosquitto passwd file
+	err := controller.Mqtt.AddUser(device.UUID, password)
+	if err != nil {
+		log.Println("Error adding user to mosquitto: ", err)
+		http.Error(res, "Internal Server Error", 500)
+		return
+	}
 
+	// generate json response
 	deviceJson, err := json.Marshal(device)
 	if err != nil {
 		log.Println("Error creating device: ", err)
@@ -40,8 +48,17 @@ func (controller *DeviceController) DeleteDevice(res http.ResponseWriter, req *h
 	err := model.DeleteDeviceByUUID(controller.DB, uid)
 
 	if err != nil {
+
+		// delete device from mqtt passwd file
+		err := controller.Mqtt.DeleteUser(uid)
+		if err != nil {
+			log.Println("Error deleting user from mosquitto: ", err)
+		}
+
 		res.WriteHeader(http.StatusOK)
+
 	} else {
+
 		res.WriteHeader(http.StatusNotFound)
 	}
 }

@@ -26,7 +26,8 @@ func setupAPI(db *sql.DB, mqttClient *MQTT.Client) {
 	// api
 	router.POST("/api/location/{id}", locationHandler)
 
-	deviceController := &DeviceController{DB: db}
+	mqtt := MQTTUser{config}
+	deviceController := &DeviceController{DB: db, Mqtt: mqtt}
 	router.POST("/api/device/new", 			deviceController.NewDevice)
 	router.POST("/api/device/delete/:uid", 	deviceController.DeleteDevice)
 
