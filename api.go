@@ -27,8 +27,11 @@ func setupAPI(db *sql.DB, mqttClient *MQTT.Client) {
 	router.POST("/api/location/{id}", locationHandler)
 
 	deviceController := &DeviceController{DB: db}
-	router.POST("/api/device/new", deviceController.NewDevice)
-	router.POST("/api/device/delete/:uid", deviceController.DeleteDevice)
+	router.POST("/api/device/new", 			deviceController.NewDevice)
+	router.POST("/api/device/delete/:uid", 	deviceController.DeleteDevice)
+
+	locationController := &LocationController{DB: db}
+	router.POST("/api/location/:from/:to", 	locationController.GetLocations)
 
 	server := negroni.New()
 	server.Use(negroni.NewLogger())
@@ -42,10 +45,12 @@ func setupAPI(db *sql.DB, mqttClient *MQTT.Client) {
 }
 
 func Index(res http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+
 	http.ServeFile(res, req, config.PublicDir+"/index.html")
 }
 
 func NotFoundHandler(res http.ResponseWriter, req *http.Request) {
+
 	http.ServeFile(res, req, config.PublicDir+"/404.html")
 }
 
@@ -68,13 +73,24 @@ func HeaderMiddleware(res http.ResponseWriter, req *http.Request, next http.Hand
 
 func HeaderMiddleware(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 
-	// TODO implement authentication
-	if auth {
+	if strings.HasPrefix(req.URL.Path, "/api") {
 
-		next(res, req)
+		// get token from request
+		// check if token is valid and find corresponding user
+		// append user to request
+
+
+		if auth {
+
+			next(res, req)
+
+		} else {
+
+			http.Error(res, "Unauthorized", 401)
+		}
 
 	} else {
 
-		// return error
+		next(res, req)
 	}
 }
