@@ -3,7 +3,6 @@ package controller
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -26,7 +25,7 @@ func (controller *DeviceController) NewDevice(res http.ResponseWriter, req *http
 
 	deviceJson, err := json.Marshal(device)
 	if err != nil {
-		log.Println("Error creating note: ", err)
+		log.Println("Error creating device: ", err)
 		http.Error(res, "Internal Server Error", 500)
 		return
 	}
