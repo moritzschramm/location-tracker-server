@@ -1,10 +1,11 @@
-package controller
+package api
 
 import (
 	"database/sql"
 	"encoding/json"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/moritzschramm/location-tracker-server/model"
 

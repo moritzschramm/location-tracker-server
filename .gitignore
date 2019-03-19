@@ -1,1 +1,3 @@
 config.toml
+location-tracker-server
+vault.db

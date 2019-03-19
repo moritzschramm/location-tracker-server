@@ -1,21 +1,21 @@
-package main
+package mqtt
 
 import (
 	"os/exec"
 )
 
-type MQTTUser struct {
-	Config MQTTConfig
+type User struct {
+	Config Config
 }
 
-func (m MQTTUser) AddUser(username, password string) error {
+func (m User) AddUser(username, password string) error {
 
 	cmd := exec.Command("mosquitto_passwd", "-b", m.Config.PasswdFile, username, password)
 
 	return cmd.Run()
 }
 
-func (m MQTTUser) DeleteUser(username string) error {
+func (m User) DeleteUser(username string) error {
 
 	cmd := exec.Command("mosquitto_passwd", "-D", m.Config.PasswdFile, username)
 

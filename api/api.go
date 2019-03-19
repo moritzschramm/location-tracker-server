@@ -1,11 +1,13 @@
-package main
+package api
 
 import (
 	"database/sql"
 	"net/http"
 	"strings"
+	"log"
 
-	"github.com/moritzschramm/location-tracker-server/controller"
+	"github.com/moritzschramm/location-tracker-server/config"
+	"github.com/moritzschramm/location-tracker-server/mqtt"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/urfave/negroni"
@@ -13,21 +15,18 @@ import (
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 )
 
-func setupAPI(db *sql.DB, mqttClient *MQTT.Client) {
+func SetupAPI(db *sql.DB, mqttClient MQTT.Client, config config.Config) {
 
 	// setup router
 	router := httprouter.New()
-	router.NotFound = http.HandlerFunc(NotFoundHandler)
+	//router.NotFound = http.HandlerFunc(NotFoundHandler)
 
 	// static files
-	router.GET("/", Index)
+	//router.GET("/", Index)
 	router.ServeFiles("/assets/*filepath", http.Dir(config.PublicDir+"/assets"))
 
 	// api
-	router.POST("/api/location/{id}", locationHandler)
-
-	mqtt := MQTTUser{config}
-	deviceController := &DeviceController{DB: db, Mqtt: mqtt}
+	deviceController := &DeviceController{DB: db, Mqtt: mqtt.User{config.MQTT}}
 	router.POST("/api/device/new", 			deviceController.NewDevice)
 	router.POST("/api/device/delete/:uid", 	deviceController.DeleteDevice)
 
@@ -45,7 +44,7 @@ func setupAPI(db *sql.DB, mqttClient *MQTT.Client) {
 	log.Fatal(http.ListenAndServe(":"+config.Port, server))
 }
 
-func Index(res http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+/*func Index(res http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 
 	http.ServeFile(res, req, config.PublicDir+"/index.html")
 }
@@ -53,7 +52,7 @@ func Index(res http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 func NotFoundHandler(res http.ResponseWriter, req *http.Request) {
 
 	http.ServeFile(res, req, config.PublicDir+"/404.html")
-}
+}*/
 
 func HeaderMiddleware(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 
@@ -72,7 +71,7 @@ func HeaderMiddleware(res http.ResponseWriter, req *http.Request, next http.Hand
 	next(res, req)
 }
 
-func HeaderMiddleware(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
+func AuthenticationMiddleware(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 
 	if strings.HasPrefix(req.URL.Path, "/api") {
 
@@ -81,12 +80,13 @@ func HeaderMiddleware(res http.ResponseWriter, req *http.Request, next http.Hand
 		// append user to request
 
 
-		if auth {
+		if true {
 
 			next(res, req)
 
 		} else {
 
+			log.Println("Unauthorized access attempt by ", req.RemoteAddr, req.UserAgent())
 			http.Error(res, "Unauthorized", 401)
 		}
 

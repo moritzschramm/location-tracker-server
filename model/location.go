@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	INSERT_QUERY = "INSERT INTO locations (device_id, lat, long, time) VALUES (?, ?, ?, ?)"
+	LOCATION_INSERT_QUERY = "INSERT INTO locations (device_id, lat, long, time) VALUES (?, ?, ?, ?)"
 )
 
 type Location struct {
@@ -18,7 +18,7 @@ type Location struct {
 
 func MakeLocation(db *sql.DB, deviceId int, lat, long float64, time time.Time) (*Location, error) {
 
-	rows, err := db.Query(INSERT_QUERY, deviceId, lat, long, time)
+	rows, err := db.Query(LOCATION_INSERT_QUERY, deviceId, lat, long, time)
 	if err != nil {
 		return nil, err
 	}
@@ -30,4 +30,5 @@ func MakeLocation(db *sql.DB, deviceId int, lat, long float64, time time.Time) (
 func GetLocations(db * sql.DB, from, to time.Time) ([]Location) {
 
 	// TODO
+	return nil
 }

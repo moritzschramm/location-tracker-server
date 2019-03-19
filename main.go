@@ -1,13 +1,20 @@
 package main
 
+import (
+	"github.com/moritzschramm/location-tracker-server/mqtt"
+	"github.com/moritzschramm/location-tracker-server/api"
+	"github.com/moritzschramm/location-tracker-server/config"
+	"github.com/moritzschramm/location-tracker-server/database"
+)
+
 func main() {
 
-	loadConfig()
+	config := config.LoadConfig()
 
-	db := setupDatabase()
+	db := database.SetupDatabase()
 	defer db.Close()
 
-	mqttClient := setupMQTTClient(db)
+	mqttClient := mqtt.SetupMQTTClient(db, config.MQTT)
 
-	setupAPI(db, mqttClient)
+	api.SetupAPI(db, mqttClient, config)
 }

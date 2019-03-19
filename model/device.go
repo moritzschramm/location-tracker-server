@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	INSERT_QUERY = "INSERT INTO devices (uuid, password, created_at) VALUES (?, ?, ?)"
-	DELETE_QUERY = "DELETE FROM devices WHERE uuid = '?'"
+	DEVICE_INSERT_QUERY = "INSERT INTO devices (uuid, password, created_at) VALUES (?, ?, ?)"
+	DEVICE_DELETE_QUERY = "DELETE FROM devices WHERE uuid = '?'"
 )
 
 type Device struct {
@@ -18,33 +18,45 @@ type Device struct {
 	Created_at time.Time `json:"createdAt"`
 }
 
-func MakeDevice(db *sql.DB, password string) (*Device, error) {
+func MakeDevice(db *sql.DB, password []byte) (*Device, error) {
 
 	// create UUID and hash password
 	createdAt := time.Now()
 	uid := uuid.Must(uuid.NewV4())
-	hashedPassword := bcrypt.GenerateFromPassword(password, bcrypt.DefaultCost)
+	hashedPassword, err := bcrypt.GenerateFromPassword(password, bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
 
 	// insert into database
-	rows, err := db.Query(INSERT_QUERY, uid, hashedPassword, createdAt)
+	result, err := db.Exec(DEVICE_INSERT_QUERY, uid, hashedPassword, createdAt)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	deviceId, err := result.LastInsertId()
 
-	// get device_id (is auto increment)
-	var deviceId int
-	err = db.QueryRow("SELECT device_id FROM devices ORDER BY created_at DESC LIMIT 1").Scan(&deviceId)
 	if err != nil {
-		return nil, err
+		// get device_id manually
+		var id int
+		err = db.QueryRow("SELECT device_id FROM devices ORDER BY created_at DESC LIMIT 1").Scan(&id)
+		if err != nil {
+			return nil, err
+		}
+
+		deviceId = int64(id)
 	}
 
-	return &Device{uid, deviceId, createdAt}, nil
+	return &Device{uid, int(deviceId), createdAt}, nil
+}
+
+func AuthDevice(db *sql.DB, uid, password string) (string, AuthToken, error) {
+
+	return "", AuthToken{}, nil
 }
 
 func DeleteDeviceByUUID(db *sql.DB, uid string) error {
 
-	err := device.DB.QueryRow(DELETE_QUERY, uid)
+	_, err := db.Exec(DEVICE_DELETE_QUERY, uid)
 
 	return err
 }
