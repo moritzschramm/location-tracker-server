@@ -19,10 +19,11 @@ func SetupAPI(db *sql.DB, mqttClient MQTT.Client, config config.Config) {
 
 	// setup router
 	router := httprouter.New()
-	//router.NotFound = http.HandlerFunc(NotFoundHandler)
-
-	// static files
-	//router.GET("/", Index)
+	
+	// serve static files
+	staticFileHandler := &StaticFileHandler{config}
+	router.NotFound = http.HandlerFunc(staticFileHandler.NotFoundHandler)
+	router.GET("/", staticFileHandler.ServeSinglePageApplication)
 	router.ServeFiles("/assets/*filepath", http.Dir(config.PublicDir+"/assets"))
 
 	// api
@@ -43,16 +44,6 @@ func SetupAPI(db *sql.DB, mqttClient MQTT.Client, config config.Config) {
 	log.Println("Starting server on http://" + config.Host + ":" + config.Port)
 	log.Fatal(http.ListenAndServe(":"+config.Port, server))
 }
-
-/*func Index(res http.ResponseWriter, req *http.Request, _ httprouter.Params) {
-
-	http.ServeFile(res, req, config.PublicDir+"/index.html")
-}
-
-func NotFoundHandler(res http.ResponseWriter, req *http.Request) {
-
-	http.ServeFile(res, req, config.PublicDir+"/404.html")
-}*/
 
 func HeaderMiddleware(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 
