@@ -46,7 +46,7 @@ func TLSConfig(config Config) *tls.Config {
 	certpool := x509.NewCertPool()
 	pemCerts, err := ioutil.ReadFile(config.CertFile)
 	if err != nil {
-		log.Panic("Cannot read certificate")
+		log.Panic("Cannot read certificate", err.Error())
 	}
 	certpool.AppendCertsFromPEM(pemCerts)
 

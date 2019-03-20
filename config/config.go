@@ -8,6 +8,10 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
+const (
+	CONFIG_FILE = "config/config.toml"
+)
+
 type Config struct {
 	MQTT      mqtt.Config `toml:"mqtt"`
 	Host      string
@@ -20,7 +24,7 @@ func LoadConfig() Config {
 
 	var config Config
 
-	_, err := toml.DecodeFile("config.toml", &config)
+	_, err := toml.DecodeFile(CONFIG_FILE, &config)
 
 	if err != nil {
 		log.Panic(err)
