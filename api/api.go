@@ -24,7 +24,7 @@ func SetupAPI(db *sql.DB, mqttClient MQTT.Client, config config.Config) {
 	staticFileHandler := &StaticFileHandler{config}
 	router.NotFound = http.HandlerFunc(staticFileHandler.NotFoundHandler)
 	router.GET("/", staticFileHandler.ServeSinglePageApplication)
-	router.ServeFiles("/assets/*filepath", http.Dir(config.PublicDir+"/assets"))
+	router.ServeFiles(config.PublicDir + "/assets/*filepath", http.Dir(config.PublicDir+"/assets"))
 
 	// api
 	deviceController := &DeviceController{DB: db, Mqtt: mqtt.User{config.MQTT}}
@@ -34,6 +34,7 @@ func SetupAPI(db *sql.DB, mqttClient MQTT.Client, config config.Config) {
 	locationController := &LocationController{DB: db}
 	router.POST("/api/location/:from/:to", 	locationController.GetLocations)
 
+	// setup negroni middleware
 	server := negroni.New()
 	server.Use(negroni.NewLogger())
 	server.Use(negroni.NewRecovery())
