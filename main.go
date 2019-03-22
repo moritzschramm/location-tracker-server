@@ -11,7 +11,7 @@ func main() {
 
 	config := config.LoadConfig()
 
-	db := database.SetupDatabase()
+	db := database.SetupDatabase(config)
 	defer db.Close()
 
 	mqttClient := mqtt.SetupMQTTClient(db, config.MQTT)

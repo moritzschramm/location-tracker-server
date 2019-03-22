@@ -17,6 +17,8 @@ type Config struct {
 	Host      string
 	Port      string
 	PublicDir string
+	AdminUUID string
+	AdminPassword string
 }
 
 
