@@ -10,7 +10,7 @@ const (
 )
 
 type Location struct {
-	DeviceId int       `json:"deviceId"`
+	DeviceId int       `json:"-"`
 	Lat      float64   `json:"lat"`
 	Long     float64   `json:"long"`
 	Time     time.Time `json:"time"`
@@ -27,8 +27,10 @@ func MakeLocation(db *sql.DB, deviceId int, lat, long float64, time time.Time) (
 	return &Location{deviceId, lat, long, time}, nil
 }
 
-func GetLocations(db * sql.DB, from, to time.Time) ([]Location) {
+func GetLocations(db * sql.DB, deviceId int, from, to time.Time) ([]Location) {
 
-	// TODO
+	// query locations in datetime range
+
+	// return slice of locations
 	return nil
 }

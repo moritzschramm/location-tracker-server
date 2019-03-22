@@ -18,6 +18,8 @@ type LocationController struct {
 
 func (controller *LocationController) GetLocations(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 
+	device := req.Context().Value("device").(model.Device)
+
 	from, err := time.Parse(time.RFC3339, params.ByName("from"))
 	if err != nil {
 		http.Error(res, "'from' parameter malformed", 400)
@@ -28,7 +30,7 @@ func (controller *LocationController) GetLocations(res http.ResponseWriter, req 
 		http.Error(res, "'to' parameter malformed", 400)
 	}
 
-	locations := model.GetLocations(controller.DB, from, to)
+	locations := model.GetLocations(controller.DB, device.DeviceId, from, to)
 
 	locationsJson, err := json.Marshal(locations)
 	if err != nil {

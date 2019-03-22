@@ -2,9 +2,10 @@ package model
 
 import (
 	"database/sql"
-	"github.com/satori/go.uuid"
 	"golang.org/x/crypto/bcrypt"
 	"time"
+
+	"github.com/satori/go.uuid"
 )
 
 const (
@@ -14,8 +15,8 @@ const (
 
 type Device struct {
 	UUID       uuid.UUID `json:"uuid"`
-	DeviceId   int       `json:"deviceId"`
-	Created_at time.Time `json:"createdAt"`
+	DeviceId   int       `json:"-"`
+	CreatedAt time.Time `json:"createdAt"`
 }
 
 func MakeDevice(db *sql.DB, password []byte) (*Device, error) {
@@ -47,11 +48,6 @@ func MakeDevice(db *sql.DB, password []byte) (*Device, error) {
 	}
 
 	return &Device{uid, int(deviceId), createdAt}, nil
-}
-
-func AuthDevice(db *sql.DB, uid, password string) (string, AuthToken, error) {
-
-	return "", AuthToken{}, nil
 }
 
 func DeleteDeviceByUUID(db *sql.DB, uid string) error {
