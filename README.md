@@ -14,3 +14,6 @@ sudo ./install.sh
 - `/frontend`: vue.js components and build HTML files
 - `/model`: database models
 - `/mqtt`: client to connect to the MQTT broker
+
+### Before committing
+run `./format.sh`
