@@ -1,3 +1,4 @@
 location-tracker-server
 config/config.toml
 database/vault.db
+certs/*

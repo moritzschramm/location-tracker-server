@@ -1,6 +1,8 @@
 host = "localhost"
 port = "8000"
 publicDir = "frontend"
+adminUUID = ""	# needs to be UUIDv4
+adminPassword = ""
 
 [mqtt]
 host = ""
