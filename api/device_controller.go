@@ -13,7 +13,7 @@ import (
 )
 
 type DeviceController struct {
-	DB *sql.DB
+	DB   *sql.DB
 	Mqtt mqtt.User
 }
 

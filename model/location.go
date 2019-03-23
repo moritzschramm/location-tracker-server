@@ -27,7 +27,7 @@ func MakeLocation(db *sql.DB, deviceId int, lat, long float64, time time.Time) (
 	return &Location{deviceId, lat, long, time}, nil
 }
 
-func GetLocations(db * sql.DB, deviceId int, from, to time.Time) ([]Location) {
+func GetLocations(db *sql.DB, deviceId int, from, to time.Time) []Location {
 
 	// query locations in datetime range
 

@@ -51,11 +51,11 @@ func TLSConfig(config Config) *tls.Config {
 	certpool.AppendCertsFromPEM(pemCerts)
 
 	return &tls.Config{
-		RootCAs: certpool,
-		ClientAuth: tls.NoClientCert,
+		RootCAs:            certpool,
+		ClientAuth:         tls.NoClientCert,
 		InsecureSkipVerify: true,
-		ClientCAs: nil,
-		Certificates: nil,
+		ClientCAs:          nil,
+		Certificates:       nil,
 	}
 }
 

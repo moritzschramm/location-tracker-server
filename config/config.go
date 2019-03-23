@@ -13,14 +13,13 @@ const (
 )
 
 type Config struct {
-	MQTT      mqtt.Config `toml:"mqtt"`
-	Host      string
-	Port      string
-	PublicDir string
-	AdminUUID string
+	MQTT          mqtt.Config `toml:"mqtt"`
+	Host          string
+	Port          string
+	PublicDir     string
+	AdminUUID     string
 	AdminPassword string
 }
-
 
 func LoadConfig() Config {
 

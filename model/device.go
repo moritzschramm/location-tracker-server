@@ -10,13 +10,13 @@ import (
 
 const (
 	QUERY_DEVICE_BY_ID = "SELECT uuid, created_at FROM devices WHERE device_id == ?"
-	INSERT_DEVICE = "INSERT INTO devices (uuid, password, created_at) VALUES (?, ?, ?)"
-	DELETE_DEVICE = "DELETE FROM devices WHERE uuid = '?'"
+	INSERT_DEVICE      = "INSERT INTO devices (uuid, password, created_at) VALUES (?, ?, ?)"
+	DELETE_DEVICE      = "DELETE FROM devices WHERE uuid = '?'"
 )
 
 type Device struct {
-	UUID       uuid.UUID `json:"uuid"`
-	DeviceId   int       `json:"-"`
+	UUID      uuid.UUID `json:"uuid"`
+	DeviceId  int       `json:"-"`
 	CreatedAt time.Time `json:"createdAt"`
 }
 
@@ -63,8 +63,8 @@ func GetDevice(db *sql.DB, deviceId int) (*Device, error) {
 	uid, _ := uuid.FromString(uidString)
 
 	return &Device{
-		UUID: uid, 
-		DeviceId: deviceId,
+		UUID:      uid,
+		DeviceId:  deviceId,
 		CreatedAt: createdAt,
 	}, nil
 }

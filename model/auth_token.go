@@ -1,23 +1,23 @@
 package model
 
 import (
-	"golang.org/x/crypto/bcrypt"
 	"database/sql"
+	"golang.org/x/crypto/bcrypt"
 	"time"
 )
 
 const (
-	QUERY_TOKEN = "SELECT id, device_id, created_at, expires_at FROM tokens WHERE token = '?' AND expires_at <= ?"
+	QUERY_TOKEN          = "SELECT id, device_id, created_at, expires_at FROM tokens WHERE token = '?' AND expires_at <= ?"
 	QUERY_DEVICE_BY_UUID = "SELECT device_id, password FROM devices WHERE uuid == ?"
-	INSERT_TOKEN = "INSERT INTO tokens (device_id, token, created_at, expires_at) VALUES (?, ?, ?, ?)"
-	DELETE_TOKEN = "DELETE FROM tokens WHERE id == ?"
+	INSERT_TOKEN         = "INSERT INTO tokens (device_id, token, created_at, expires_at) VALUES (?, ?, ?, ?)"
+	DELETE_TOKEN         = "DELETE FROM tokens WHERE id == ?"
 )
 
 type AuthToken struct {
-	DB *sql.DB 			`json:"-"`
-	Id int 		 		`json:"-"`
-	DeviceId int 		`json:"-"`
-	Token string 		`json:"token"`
+	DB        *sql.DB   `json:"-"`
+	Id        int       `json:"-"`
+	DeviceId  int       `json:"-"`
+	Token     string    `json:"token"`
 	CreatedAt time.Time `json:"-"`
 	ExpiresAt time.Time `json:"expiresAt"`
 }
@@ -44,7 +44,6 @@ func (token *AuthToken) Refresh() (*AuthToken, error) {
 
 	return createNewToken(db, deviceId)
 }
-
 
 func AuthDevice(db *sql.DB, uid, password string) (*AuthToken, error) {
 
@@ -77,9 +76,9 @@ func GetAuthToken(db *sql.DB, token string) (*AuthToken, error) {
 	}
 
 	return &AuthToken{
-		Id: id,
-		DeviceId: deviceId,
-		Token: token,
+		Id:        id,
+		DeviceId:  deviceId,
+		Token:     token,
 		CreatedAt: createdAt,
 		ExpiresAt: expiresAt,
 	}, nil
@@ -94,10 +93,10 @@ func createNewToken(db *sql.DB, deviceId int) (*AuthToken, error) {
 	expiresAt := createdAt.Add(2 * time.Hour)
 
 	token := &AuthToken{
-		DB: db,
-		Id: 0,
-		DeviceId: deviceId,
-		Token: tokenString,
+		DB:        db,
+		Id:        0,
+		DeviceId:  deviceId,
+		Token:     tokenString,
 		CreatedAt: createdAt,
 		ExpiresAt: expiresAt,
 	}

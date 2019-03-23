@@ -2,9 +2,9 @@ package database
 
 import (
 	"database/sql"
-	"log"
-	"io/ioutil"
 	"golang.org/x/crypto/bcrypt"
+	"io/ioutil"
+	"log"
 	"time"
 
 	"github.com/moritzschramm/location-tracker-server/config"
@@ -15,9 +15,9 @@ import (
 
 const (
 	DB_FILE_SQLITE = "database/vault.db"
-	DB_INIT_STMT = "database/init_database.sql"
+	DB_INIT_STMT   = "database/init_database.sql"
 
-	QUERY_ADMIN = "SELECT device_id FROM devices WHERE uuid = '?'"
+	QUERY_ADMIN  = "SELECT device_id FROM devices WHERE uuid = '?'"
 	INSERT_ADMIN = "INSERT INTO devices (device_id, uuid, password, created_at) VALUES (?, ?, ?, ?)"
 )
 
@@ -49,7 +49,7 @@ func openWithSQLite3Driver() (*sql.DB, error) {
 	return sql.Open("sqlite3", DB_FILE_SQLITE)
 }
 
-func openWithMySQLDriver() (*sql.DB, error) {	// if in use, uncomment driver import
+func openWithMySQLDriver() (*sql.DB, error) { // if in use, uncomment driver import
 
 	return sql.Open("mysql", "vault:secret@(mysql)/vault?parseTime=true")
 }
@@ -72,7 +72,7 @@ func initTables(db *sql.DB, config config.Config) error {
 	var deviceId int
 	err = db.QueryRow(QUERY_ADMIN, config.AdminUUID).Scan(&deviceId)
 	if err != nil {
-		
+
 		deviceId = 1
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(config.AdminPassword), bcrypt.DefaultCost)
 		if err != nil {

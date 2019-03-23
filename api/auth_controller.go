@@ -1,11 +1,11 @@
 package api
 
 import (
-	"net/http"
-	"encoding/json"
-	"database/sql"
-	"log"
 	"context"
+	"database/sql"
+	"encoding/json"
+	"log"
+	"net/http"
 	"strings"
 
 	"github.com/moritzschramm/location-tracker-server/model"
@@ -55,7 +55,6 @@ func (controller *AuthController) AuthenticationMiddleware(res http.ResponseWrit
 		ctx = context.WithValue(ctx, "token", token)
 
 		next(res, req.WithContext(ctx))
-	
 
 	} else {
 
@@ -86,16 +85,15 @@ func (controller *AuthController) Login(res http.ResponseWriter, req *http.Reque
 	}
 
 	http.SetCookie(res, &http.Cookie{
-		Name: "token",
-		Value: token.Token,
-		Expires: token.ExpiresAt,
-		Secure: true,
+		Name:     "token",
+		Value:    token.Token,
+		Expires:  token.ExpiresAt,
+		Secure:   true,
 		HttpOnly: true,
 	})
 
 	res.Write(tokenJson)
 }
-
 
 func (controller *AuthController) Logout(res http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 
@@ -104,9 +102,9 @@ func (controller *AuthController) Logout(res http.ResponseWriter, req *http.Requ
 	token.Logout()
 
 	http.SetCookie(res, &http.Cookie{
-		Name: "token", 
-		Value: "", 
-		Secure: true, 
+		Name:     "token",
+		Value:    "",
+		Secure:   true,
 		HttpOnly: true,
 	})
 
@@ -132,10 +130,10 @@ func (controller *AuthController) TokenRefresh(res http.ResponseWriter, req *htt
 	}
 
 	http.SetCookie(res, &http.Cookie{
-		Name: "token",
-		Value: token.Token,
-		Expires: token.ExpiresAt,
-		Secure: true,
+		Name:     "token",
+		Value:    token.Token,
+		Expires:  token.ExpiresAt,
+		Secure:   true,
 		HttpOnly: true,
 	})
 
