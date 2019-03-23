@@ -30,11 +30,16 @@ func (controller *LocationController) GetLocations(res http.ResponseWriter, req 
 		http.Error(res, "'to' parameter malformed", 400)
 	}
 
-	locations := model.GetLocations(controller.DB, device.DeviceId, from, to)
+	locations, err := model.GetLocations(controller.DB, device.DeviceId, from, to)
+	if err != nil {
+		log.Println("Error retrieving locations: ", err.Error())
+		http.Error(res, "Internal Server Error", 500)
+		return
+	}
 
 	locationsJson, err := json.Marshal(locations)
 	if err != nil {
-		log.Println("Error retrieving locations: ", err)
+		log.Println("Json: Error retrieving locations: ", err.Error())
 		http.Error(res, "Internal Server Error", 500)
 		return
 	}

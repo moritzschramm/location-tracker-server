@@ -8,6 +8,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/moritzschramm/location-tracker-server/model"
+
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 )
 
@@ -61,12 +63,28 @@ func TLSConfig(config Config) *tls.Config {
 
 func setupMQTTSubscriptions(db *sql.DB, client MQTT.Client) {
 
-	var subCallback MQTT.MessageHandler = func(client MQTT.Client, message MQTT.Message) {
-
-		// do something here, e.g. store in database
+	devices, err := model.GetAllDevices(db)
+	if err != nil {
+		log.Panic("Error getting devices from database: ", err.Error())
 	}
 
-	if token := client.Subscribe("some/topic", 1, subCallback); token.Wait() && token.Error() != nil {
+	for _, device := range devices {
+
+		subscribeTo("/location", device, LocationCallback, client)
+		subscribeTo("/battery", device, BatteryCallback, client)
+		subscribeTo("/settings", device, ControlSettingsCallback, client)
+	}
+}
+
+func subscribeTo(topic string, device *model.Device, callback SubCallback, client MQTT.Client) {
+
+	var subCallback MQTT.MessageHandler = func(client MQTT.Client, message MQTT.Message) {
+
+		callback(client, message, device)
+	}
+
+	token := client.Subscribe(device.UUID.String()+topic, 1, subCallback)
+	if token.Wait() && token.Error() != nil {
 		log.Println(token.Error())
 	}
 }

@@ -6,10 +6,12 @@ import (
 )
 
 const (
-	LOCATION_INSERT_QUERY = "INSERT INTO locations (device_id, lat, long, time) VALUES (?, ?, ?, ?)"
+	INSERT_LOCATION = "INSERT INTO locations (device_id, lat, long, time) VALUES (?, ?, ?, ?)"
+	QUERY_LOCATIONS = "SELECT * FROM locations WHERE device_id == ? AND time >= ? AND time <= ?"
 )
 
 type Location struct {
+	Id       int       `json:"-"`
 	DeviceId int       `json:"-"`
 	Lat      float64   `json:"lat"`
 	Long     float64   `json:"long"`
@@ -18,19 +20,37 @@ type Location struct {
 
 func MakeLocation(db *sql.DB, deviceId int, lat, long float64, time time.Time) (*Location, error) {
 
-	rows, err := db.Query(LOCATION_INSERT_QUERY, deviceId, lat, long, time)
+	rows, err := db.Query(INSERT_LOCATION, deviceId, lat, long, time)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	return &Location{deviceId, lat, long, time}, nil
+	// TODO find out id of location
+
+	return &Location{0, deviceId, lat, long, time}, nil
 }
 
-func GetLocations(db *sql.DB, deviceId int, from, to time.Time) []Location {
+func GetLocations(db *sql.DB, deviceId int, from, to time.Time) ([]*Location, error) {
 
-	// query locations in datetime range
+	var locations []*Location
 
-	// return slice of locations
-	return nil
+	rows, err := db.Query(QUERY_LOCATIONS, deviceId, from, to)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+
+		location := &Location{}
+		err = rows.Scan(&(location.Id), &(location.DeviceId), &(location.Lat), &(location.Long), &(location.Time))
+		if err != nil {
+			return nil, err
+		}
+
+		locations = append(locations, location)
+	}
+
+	return locations, nil
 }

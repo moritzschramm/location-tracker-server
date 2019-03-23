@@ -10,6 +10,7 @@ import (
 
 const (
 	QUERY_DEVICE_BY_ID = "SELECT uuid, created_at FROM devices WHERE device_id == ?"
+	QUERY_ALL_DEVICES  = "SELECT device_id, uuid, created_at FROM devices"
 	INSERT_DEVICE      = "INSERT INTO devices (uuid, password, created_at) VALUES (?, ?, ?)"
 	DELETE_DEVICE      = "DELETE FROM devices WHERE uuid = '?'"
 )
@@ -67,6 +68,34 @@ func GetDevice(db *sql.DB, deviceId int) (*Device, error) {
 		DeviceId:  deviceId,
 		CreatedAt: createdAt,
 	}, nil
+}
+
+func GetAllDevices(db *sql.DB) ([]*Device, error) {
+
+	var devices []*Device
+
+	rows, err := db.Query(QUERY_ALL_DEVICES)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+
+		var id int
+		var uidString string
+		var createdAt time.Time
+		err = rows.Scan(&id, &uidString, &createdAt)
+		if err != nil {
+			return nil, err
+		}
+
+		uid, _ := uuid.FromString(uidString)
+		device := &Device{uid, id, createdAt}
+		devices = append(devices, device)
+	}
+
+	return devices, nil
 }
 
 func DeleteDeviceByUUID(db *sql.DB, uid string) error {
