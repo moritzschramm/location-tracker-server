@@ -14,7 +14,7 @@ import (
 
 type DeviceController struct {
 	DB   *sql.DB
-	Mqtt mqtt.User
+	Mqtt mqtt.Config
 }
 
 func (controller *DeviceController) NewDevice(res http.ResponseWriter, req *http.Request, _ httprouter.Params) {

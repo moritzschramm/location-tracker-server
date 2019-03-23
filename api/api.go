@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/moritzschramm/location-tracker-server/config"
-	"github.com/moritzschramm/location-tracker-server/mqtt"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/urfave/negroni"
@@ -26,7 +25,7 @@ func SetupAPI(db *sql.DB, mqttClient MQTT.Client, config config.Config) {
 	router.ServeFiles("/"+config.PublicDir+"/assets/*filepath", http.Dir(config.PublicDir+"/assets"))
 
 	// api routes
-	deviceController := &DeviceController{DB: db, Mqtt: mqtt.User{config.MQTT}}
+	deviceController := &DeviceController{DB: db, Mqtt: config.MQTT}
 	router.POST("/api/device/new", deviceController.NewDevice)
 	router.POST("/api/device/delete/:uid", deviceController.DeleteDevice)
 
