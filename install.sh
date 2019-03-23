@@ -48,3 +48,11 @@ mv server.* /etc/mosquitto/certs
 # restart service
 echo "Restarting mosquitto service"
 systemctl restart mosquitto
+
+
+# build go server
+go build -i -o location-tracker-server
+
+# create systemd service unit
+
+# enable systemd service
