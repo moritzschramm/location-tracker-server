@@ -18,7 +18,7 @@ type LocationController struct {
 
 func (controller *LocationController) GetLocations(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 
-	device := req.Context().Value("device").(model.Device)
+	device := req.Context().Value("device").(*model.Device)
 
 	from, err := time.Parse(time.RFC3339, params.ByName("from"))
 	if err != nil {

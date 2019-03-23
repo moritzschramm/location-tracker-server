@@ -4,23 +4,47 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"database/sql"
 	"time"
-
-	"github.com/satori/go.uuid"
 )
 
 const (
-	QUERY_TOKEN = "SELECT device_id FROM tokens WHERE token = '?' AND expires_at <= ?"
-	QUERY_DEVICE_BY_ID = "SELECT uuid, created_at FROM devices WHERE device_id == ?"
+	QUERY_TOKEN = "SELECT id, device_id, created_at, expires_at FROM tokens WHERE token = '?' AND expires_at <= ?"
 	QUERY_DEVICE_BY_UUID = "SELECT device_id, password FROM devices WHERE uuid == ?"
+	INSERT_TOKEN = "INSERT INTO tokens (device_id, token, created_at, expires_at) VALUES (?, ?, ?, ?)"
+	DELETE_TOKEN = "DELETE FROM tokens WHERE id == ?"
 )
 
 type AuthToken struct {
+	DB *sql.DB 			`json:"-"`
 	Id int 		 		`json:"-"`
 	DeviceId int 		`json:"-"`
 	Token string 		`json:"token"`
 	CreatedAt time.Time `json:"-"`
 	ExpiresAt time.Time `json:"expiresAt"`
 }
+
+func (token *AuthToken) Logout() error {
+
+	_, err := token.DB.Exec(DELETE_TOKEN, token.Id)
+	if err != nil {
+		return err
+	}
+
+	token = nil
+
+	return nil
+}
+
+func (token *AuthToken) Refresh() (*AuthToken, error) {
+
+	db := token.DB
+	deviceId := token.DeviceId
+
+	// delete old token
+	token.Logout()
+
+	return createNewToken(db, deviceId)
+}
+
 
 func AuthDevice(db *sql.DB, uid, password string) (*AuthToken, error) {
 
@@ -38,16 +62,19 @@ func AuthDevice(db *sql.DB, uid, password string) (*AuthToken, error) {
 		return nil, err
 	}
 
-	// create new random token (256 bit long)
-	// TODO
-	token := "hello"
+	return createNewToken(db, deviceId)
+}
 
-	// insert new token in database
+func GetAuthToken(db *sql.DB, token string) (*AuthToken, error) {
+
 	var id int
-
-	createdAt := time.Now()
-	twoHours, _ := time.ParseDuration("2h")
-	expiresAt := createdAt.Add(twoHours)
+	var deviceId int
+	var createdAt time.Time
+	var expiresAt time.Time
+	err := db.QueryRow(QUERY_TOKEN, token, time.Now()).Scan(&id, &deviceId, &createdAt, &expiresAt)
+	if err != nil {
+		return nil, err
+	}
 
 	return &AuthToken{
 		Id: id,
@@ -58,27 +85,28 @@ func AuthDevice(db *sql.DB, uid, password string) (*AuthToken, error) {
 	}, nil
 }
 
-func CheckAuth(db *sql.DB, token string) (*Device, error) {
+func createNewToken(db *sql.DB, deviceId int) (*AuthToken, error) {
 
-	// check if token exists
-	var deviceId int
-	err := db.QueryRow(QUERY_TOKEN, token, time.Now()).Scan(&deviceId)
-	if err != nil {
-		return nil, err
-	} 
+	// create new random token (256 bit long)
+	// TODO
+	tokenString := "hello"
+	createdAt := time.Now()
+	expiresAt := createdAt.Add(2 * time.Hour)
 
-	var uidString string
-	var createdAt time.Time
-	err = db.QueryRow(QUERY_DEVICE_BY_ID, deviceId).Scan(&uidString, &createdAt)
-	if err != nil {
-		return nil, err
+	token := &AuthToken{
+		DB: db,
+		Id: 0,
+		DeviceId: deviceId,
+		Token: tokenString,
+		CreatedAt: createdAt,
+		ExpiresAt: expiresAt,
 	}
 
-	uid, _ := uuid.FromString(uidString)
+	// insert new token in database
+	// TODO
+	var id int
 
-	return &Device{
-		UUID: uid, 
-		DeviceId: deviceId,
-		CreatedAt: createdAt,
-	}, nil
-} 
+	token.Id = id
+
+	return token, nil
+}

@@ -27,23 +27,35 @@ func (controller *AuthController) AuthenticationMiddleware(res http.ResponseWrit
 
 			log.Println("Unauthorized acces attempt (no token) by ", req.RemoteAddr, req.UserAgent())
 			http.Error(res, "Unauthorized", 401)
+			return
 		}
 
-		// check if token is valid and find corresponding user
-		device, err := model.CheckAuth(controller.DB, tokenCookie.Value)
-
+		// check if token is valid
+		token, err := model.GetAuthToken(controller.DB, tokenCookie.Value)
 		if err != nil {
 
-			// append user to request
-			ctx := req.Context()
+			log.Println("Unauthorized acces attempt (wrong token) by ", req.RemoteAddr, req.UserAgent())
+			http.Error(res, "Forbidden", 403)
+			return
+		}
 
-			next(res, req.WithContext(context.WithValue(ctx, "device", device)))
-
-		} else {
+		// find corresponding device
+		device, err := model.GetDevice(controller.DB, token.DeviceId)
+		if err != nil {
 
 			log.Println("Unauthorized access attempt by ", req.RemoteAddr, req.UserAgent())
 			http.Error(res, "Forbidden", 403)
+			return
+
 		}
+
+		// append device and token to request
+		ctx := req.Context()
+		ctx = context.WithValue(ctx, "device", device)
+		ctx = context.WithValue(ctx, "token", token)
+
+		next(res, req.WithContext(ctx))
+	
 
 	} else {
 
@@ -68,10 +80,18 @@ func (controller *AuthController) Login(res http.ResponseWriter, req *http.Reque
 	// create json for token
 	tokenJson, err := json.Marshal(&token)
 	if err != nil {
-		log.Println("Json: Error creating token: ", err)
+		log.Println("Json: Error creating token: ", err.Error())
 		http.Error(res, "Internal Server Error", 500)
 		return
 	}
+
+	http.SetCookie(res, &http.Cookie{
+		Name: "token",
+		Value: token.Token,
+		Expires: token.ExpiresAt,
+		Secure: true,
+		HttpOnly: true,
+	})
 
 	res.Write(tokenJson)
 }
@@ -79,10 +99,45 @@ func (controller *AuthController) Login(res http.ResponseWriter, req *http.Reque
 
 func (controller *AuthController) Logout(res http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 
+	token := req.Context().Value("token").(*model.AuthToken)
 
+	token.Logout()
+
+	http.SetCookie(res, &http.Cookie{
+		Name: "token", 
+		Value: "", 
+		Secure: true, 
+		HttpOnly: true,
+	})
+
+	res.WriteHeader(http.StatusOK)
 }
 
 func (controller *AuthController) TokenRefresh(res http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 
+	token := req.Context().Value("token").(*model.AuthToken)
 
+	token, err := token.Refresh()
+	if err != nil {
+		log.Println("Error refreshing token: ", err.Error())
+		http.Error(res, "Internal Server Error", 500)
+		return
+	}
+
+	tokenJson, err := json.Marshal(&token)
+	if err != nil {
+		log.Println("Json: Error creating token: ", err.Error())
+		http.Error(res, "Internal Server Error", 500)
+		return
+	}
+
+	http.SetCookie(res, &http.Cookie{
+		Name: "token",
+		Value: token.Token,
+		Expires: token.ExpiresAt,
+		Secure: true,
+		HttpOnly: true,
+	})
+
+	res.Write(tokenJson)
 }

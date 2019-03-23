@@ -9,8 +9,9 @@ import (
 )
 
 const (
-	DEVICE_INSERT_QUERY = "INSERT INTO devices (uuid, password, created_at) VALUES (?, ?, ?)"
-	DEVICE_DELETE_QUERY = "DELETE FROM devices WHERE uuid = '?'"
+	QUERY_DEVICE_BY_ID = "SELECT uuid, created_at FROM devices WHERE device_id == ?"
+	INSERT_DEVICE = "INSERT INTO devices (uuid, password, created_at) VALUES (?, ?, ?)"
+	DELETE_DEVICE = "DELETE FROM devices WHERE uuid = '?'"
 )
 
 type Device struct {
@@ -30,7 +31,7 @@ func MakeDevice(db *sql.DB, password []byte) (*Device, error) {
 	}
 
 	// insert into database
-	result, err := db.Exec(DEVICE_INSERT_QUERY, uid, hashedPassword, createdAt)
+	result, err := db.Exec(INSERT_DEVICE, uid, hashedPassword, createdAt)
 	if err != nil {
 		return nil, err
 	}
@@ -50,9 +51,27 @@ func MakeDevice(db *sql.DB, password []byte) (*Device, error) {
 	return &Device{uid, int(deviceId), createdAt}, nil
 }
 
+func GetDevice(db *sql.DB, deviceId int) (*Device, error) {
+
+	var uidString string
+	var createdAt time.Time
+	err := db.QueryRow(QUERY_DEVICE_BY_ID, deviceId).Scan(&uidString, &createdAt)
+	if err != nil {
+		return nil, err
+	}
+
+	uid, _ := uuid.FromString(uidString)
+
+	return &Device{
+		UUID: uid, 
+		DeviceId: deviceId,
+		CreatedAt: createdAt,
+	}, nil
+}
+
 func DeleteDeviceByUUID(db *sql.DB, uid string) error {
 
-	_, err := db.Exec(DEVICE_DELETE_QUERY, uid)
+	_, err := db.Exec(DELETE_DEVICE, uid)
 
 	return err
 }
