@@ -19,11 +19,18 @@ type DeviceController struct {
 
 func (controller *DeviceController) NewDevice(res http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 
-	// create a new device
+	// check password
 	password := req.FormValue("password")
+	if len(password) < 12 {
+		log.Println("Error creating device: password too short")
+		http.Error(res, "Password too short", 400)
+		return
+	}
+
+	// create a new device
 	device, err := model.MakeDevice(controller.DB, []byte(password))
 	if err != nil {
-		log.Println("Error creating device: ", err)
+		log.Println("Error creating device: ", err.Error())
 		http.Error(res, "Internal Server Error", 500)
 		return
 	}
@@ -31,7 +38,7 @@ func (controller *DeviceController) NewDevice(res http.ResponseWriter, req *http
 	// update mosquitto passwd file
 	err = controller.Mqtt.AddUser(device.UUID.String(), password)
 	if err != nil {
-		log.Println("Error adding user to mosquitto: ", err)
+		log.Println("Error adding user to mosquitto: ", err.Error())
 		http.Error(res, "Internal Server Error", 500)
 		return
 	}
@@ -39,7 +46,7 @@ func (controller *DeviceController) NewDevice(res http.ResponseWriter, req *http
 	// generate json response
 	deviceJson, err := json.Marshal(device)
 	if err != nil {
-		log.Println("Json: Error creating device: ", err)
+		log.Println("Json: Error creating device: ", err.Error())
 		http.Error(res, "Internal Server Error", 500)
 		return
 	}
@@ -58,7 +65,7 @@ func (controller *DeviceController) DeleteDevice(res http.ResponseWriter, req *h
 		// delete device from mqtt passwd file
 		err := controller.Mqtt.DeleteUser(uid)
 		if err != nil {
-			log.Println("Error deleting user from mosquitto: ", err)
+			log.Println("Error deleting user from mosquitto: ", err.Error())
 		}
 
 		res.WriteHeader(http.StatusOK)
