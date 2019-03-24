@@ -1,4 +1,4 @@
-# Location tracker server
+# Location tracker server [![Build Status](https://travis-ci.org/moritzschramm/location-tracker-server.svg?branch=master)](https://travis-ci.org/moritzschramm/location-tracker-server)
 Server for [location tracker](https://github.com/moritzschramm/location-tracker)
 
 ## Installation
