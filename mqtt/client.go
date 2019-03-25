@@ -70,20 +70,20 @@ func setupMQTTSubscriptions(db *sql.DB, client MQTT.Client) {
 
 	for _, device := range devices {
 
-		subscribeTo("/location", device, LocationCallback, client)
-		subscribeTo("/battery", device, BatteryCallback, client)
-		subscribeTo("/settings", device, ControlSettingsCallback, client)
+		handler := &SubHandler{
+			DB: db,
+			Device: device,
+		}
+
+		subscribeTo("/location", handler, handler.LocationCallback)
+		subscribeTo("/battery", handler, handler.BatteryCallback)
+		subscribeTo("/settings", handler, handler.ControlSettingsCallback)
 	}
 }
 
-func subscribeTo(topic string, device *model.Device, callback SubCallback, client MQTT.Client) {
+func subscribeTo(topic string, handler *SubHandler, callback MQTT.MessageHandler) {
 
-	var subCallback MQTT.MessageHandler = func(client MQTT.Client, message MQTT.Message) {
-
-		callback(client, message, device)
-	}
-
-	token := client.Subscribe(device.UUID.String()+topic, 1, subCallback)
+	token := handler.Client.Subscribe(handler.Device.UUID.String()+topic, 1, callback)
 	if token.Wait() && token.Error() != nil {
 		log.Println(token.Error())
 	}
