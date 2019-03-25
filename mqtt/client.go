@@ -75,16 +75,8 @@ func setupMQTTSubscriptions(db *sql.DB, client MQTT.Client) {
 			Device: device,
 		}
 
-		subscribeTo("/location", handler, handler.LocationCallback)
-		subscribeTo("/battery", handler, handler.BatteryCallback)
-		subscribeTo("/settings", handler, handler.ControlSettingsCallback)
-	}
-}
-
-func subscribeTo(topic string, handler *SubHandler, callback MQTT.MessageHandler) {
-
-	token := handler.Client.Subscribe(handler.Device.UUID.String()+topic, 1, callback)
-	if token.Wait() && token.Error() != nil {
-		log.Println(token.Error())
+		handler.SubscribeTo("/location", handler.LocationCallback)
+		handler.SubscribeTo("/battery", handler.BatteryInfoCallback)
+		handler.SubscribeTo("/settings", handler.ControlSettingsCallback)
 	}
 }
