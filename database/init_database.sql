@@ -24,8 +24,8 @@ CREATE TABLE IF NOT EXISTS `locations` (
     `time` DATETIME
 );
 
--- battery table --
-CREATE TABLE IF NOT EXISTS `battery` (
+-- battery infos table --
+CREATE TABLE IF NOT EXISTS `battery_infos` (
     `id` INTEGER PRIMARY KEY AUTOINCREMENT,
     `device_id` INTEGER NOT NULL,
     `percentage` INTEGER,
