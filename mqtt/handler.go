@@ -1,21 +1,21 @@
 package mqtt
 
 import (
-	"strings"
-	"strconv"
-	"time"
 	"database/sql"
-	"log"
 	"github.com/moritzschramm/location-tracker-server/model"
+	"log"
+	"strconv"
+	"strings"
+	"time"
 
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 )
 
 type SubHandler struct {
-	DB *sql.DB
+	DB     *sql.DB
 	Device *model.Device
 	Client MQTT.Client
-} 
+}
 
 func (handler *SubHandler) LocationCallback(client MQTT.Client, message MQTT.Message) {
 

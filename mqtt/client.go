@@ -71,7 +71,7 @@ func setupMQTTSubscriptions(db *sql.DB, client MQTT.Client) {
 	for _, device := range devices {
 
 		handler := &SubHandler{
-			DB: db,
+			DB:     db,
 			Device: device,
 		}
 
