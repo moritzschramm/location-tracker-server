@@ -16,6 +16,7 @@ const (
 )
 
 type Device struct {
+	DB *sql.DB 			`json:"-"`
 	UUID      uuid.UUID `json:"uuid"`
 	DeviceId  int       `json:"-"`
 	CreatedAt time.Time `json:"createdAt"`
@@ -49,7 +50,12 @@ func MakeDevice(db *sql.DB, password []byte) (*Device, error) {
 		deviceId = int64(id)
 	}
 
-	return &Device{uid, int(deviceId), createdAt}, nil
+	return &Device{
+		DB: 	   db,
+		UUID:      uid,
+		DeviceId:  int(deviceId),
+		CreatedAt: createdAt,
+	}, nil
 }
 
 func GetDevice(db *sql.DB, deviceId int) (*Device, error) {
@@ -64,6 +70,7 @@ func GetDevice(db *sql.DB, deviceId int) (*Device, error) {
 	uid, _ := uuid.FromString(uidString)
 
 	return &Device{
+		DB: 	   db,
 		UUID:      uid,
 		DeviceId:  deviceId,
 		CreatedAt: createdAt,
@@ -91,7 +98,7 @@ func GetAllDevices(db *sql.DB) ([]*Device, error) {
 		}
 
 		uid, _ := uuid.FromString(uidString)
-		device := &Device{uid, id, createdAt}
+		device := &Device{db, uid, id, createdAt}
 		devices = append(devices, device)
 	}
 
