@@ -20,15 +20,23 @@ type Location struct {
 
 func MakeLocation(db *sql.DB, deviceId int, lat, long float64, time time.Time) (*Location, error) {
 
-	rows, err := db.Query(INSERT_LOCATION, deviceId, lat, long, time)
+	result, err := db.Exec(INSERT_LOCATION, deviceId, lat, long, time)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
 
-	// TODO find out id of location
+	id, err := result.LastInsertId()
+	if err != nil {
+		return nil, err
+	}
 
-	return &Location{0, deviceId, lat, long, time}, nil
+	return &Location{
+		Id:       int(id),
+		DeviceId: deviceId,
+		Lat:      lat,
+		Long:     long,
+		Time:     time,
+	}, nil
 }
 
 func GetLocations(db *sql.DB, deviceId int, from, to time.Time) ([]*Location, error) {
