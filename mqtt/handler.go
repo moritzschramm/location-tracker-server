@@ -58,7 +58,7 @@ func (handler *SubHandler) BatteryInfoCallback(client MQTT.Client, message MQTT.
 	// message contains battery info in format <percentage>,<time>
 	m := strings.Split(string(message.Payload()), ",")
 
-	percentage, err := strconv.ParseInt(m[0])
+	percentage, err := strconv.ParseInt(m[0], 10, 32)
 	if err != nil {
 		log.Println("Error parsing percentage: ", m[0], err.Error())
 		return
@@ -70,7 +70,7 @@ func (handler *SubHandler) BatteryInfoCallback(client MQTT.Client, message MQTT.
 		return
 	}
 
-	_, err = model.MakeBatteryInfo(handler.DB, handler.Device.DeviceId, percentage, time)
+	_, err = model.MakeBatteryInfo(handler.DB, handler.Device.DeviceId, int(percentage), time)
 	if err != nil {
 		log.Println("Error creating battery info: ", err.Error())
 		return
