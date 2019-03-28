@@ -34,6 +34,11 @@ CREATE TABLE IF NOT EXISTS `battery_infos` (
 
 -- control settings table --
 CREATE TABLE IF NOT EXISTS `control_settings` (
-    `id` INTEGER PRIMARY KEY AUTOINCREMENT,
-    `device_id` INTEGER NOT NULL
+    `device_id` INTEGER PRIMARY KEY AUTOINCREMENT,
+    `operation_mode` INTEGER NOT NULL,
+    `alarm` INTEGER NOT NULL,
+    `alarm_enabled` INTEGER NOT NULL,
+    `update_frequency` INTEGER NOT NULL,
+    `rf_enabled` INTEGER NOT NULL,
+    `updated_at` DATETIME NOT NULL,
 );
