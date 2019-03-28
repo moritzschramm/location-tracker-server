@@ -4,9 +4,13 @@ import (
 	"database/sql"
 	"golang.org/x/crypto/bcrypt"
 	"time"
+	"crypto/rand"
+	"encoding/base64"
 )
 
 const (
+	TOKEN_SIZE = 256
+
 	QUERY_TOKEN          = "SELECT id, device_id, created_at, expires_at FROM tokens WHERE token = '?' AND expires_at <= ?"
 	QUERY_DEVICE_BY_UUID = "SELECT device_id, password FROM devices WHERE uuid == ?"
 	INSERT_TOKEN         = "INSERT INTO tokens (device_id, token, created_at, expires_at) VALUES (?, ?, ?, ?)"
@@ -87,25 +91,48 @@ func GetAuthToken(db *sql.DB, token string) (*AuthToken, error) {
 func createNewToken(db *sql.DB, deviceId int) (*AuthToken, error) {
 
 	// create new random token (256 bit long)
-	// TODO
-	tokenString := "hello"
+	tokenString, err := generateRandomToken(TOKEN_SIZE)
+	if err != nil {
+		return nil, err
+	}
+
 	createdAt := time.Now()
 	expiresAt := createdAt.Add(2 * time.Hour)
 
+	// insert new token in database
+	result, err := db.Exec(INSERT_TOKEN, deviceId, tokenString, createdAt, expiresAt)
+	if err != nil {
+		return nil, err
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return nil, err
+	}
+
 	token := &AuthToken{
 		DB:        db,
-		Id:        0,
+		Id:        int(id),
 		DeviceId:  deviceId,
 		Token:     tokenString,
 		CreatedAt: createdAt,
 		ExpiresAt: expiresAt,
 	}
 
-	// insert new token in database
-	// TODO
-	var id int
-
-	token.Id = id
-
 	return token, nil
+}
+
+
+func generateRandomToken(bytes int) (string, error) {
+
+	b := make([]byte, bytes)
+
+	_, err := rand.Read(b)
+	if err != nil {
+		return nil, err
+	}
+
+	s := base64.StrEncoding.EncodeToString(b)
+
+	return s, nil
 }
