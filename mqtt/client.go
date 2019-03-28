@@ -78,5 +78,6 @@ func setupMQTTSubscriptions(db *sql.DB, client MQTT.Client) {
 		handler.SubscribeTo("/location", handler.LocationCallback)
 		handler.SubscribeTo("/battery", handler.BatteryInfoCallback)
 		handler.SubscribeTo("/settings", handler.ControlSettingsCallback)
+		handler.SubscribeTo("/alarm", handler.AlarmCallback)
 	}
 }
