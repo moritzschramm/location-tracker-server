@@ -21,12 +21,12 @@ func MakeBatteryInfo(db *sql.DB, deviceId, percentage int, time time.Time) (*Bat
 
 	result, err := db.Exec(INSERT_BATTERY_INFO, deviceId, percentage, time)
 	if err != nil {
-		return nil, error
+		return nil, err
 	}
 
 	id, err := result.LastInsertId()
 	if err != nil {
-		return nil, error
+		return nil, err
 	}
 
 	return &BatteryInfo{

@@ -27,11 +27,11 @@ type ControlSettings struct {
 
 func (settings *ControlSettings) Update() error {
 
-	err := db.QueryRow(QUERY_CONTROL_SETTINGS, settings.DeviceId).Scan()
+	err := settings.DB.QueryRow(QUERY_CONTROL_SETTINGS, settings.DeviceId).Scan()
 
 	if err != nil { // no control setting for this device in database, insert new settings
 
-		result, err := db.Exec(INSERT_CONTROL_SETTINGS,
+		_, err := settings.DB.Exec(INSERT_CONTROL_SETTINGS,
 			settings.DeviceId,
 			settings.UpdatedAt,
 			settings.OperationMode,
@@ -46,7 +46,7 @@ func (settings *ControlSettings) Update() error {
 
 	} else {
 
-		result, err := db.Exec(UPDATE_CONTROL_SETTINGS,
+		_, err := settings.DB.Exec(UPDATE_CONTROL_SETTINGS,
 			settings.UpdatedAt,
 			settings.OperationMode,
 			settings.Alarm,

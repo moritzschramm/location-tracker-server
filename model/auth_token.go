@@ -1,11 +1,11 @@
 package model
 
 import (
+	"crypto/rand"
 	"database/sql"
+	"encoding/base64"
 	"golang.org/x/crypto/bcrypt"
 	"time"
-	"crypto/rand"
-	"encoding/base64"
 )
 
 const (
@@ -122,17 +122,16 @@ func createNewToken(db *sql.DB, deviceId int) (*AuthToken, error) {
 	return token, nil
 }
 
-
 func generateRandomToken(bytes int) (string, error) {
 
 	b := make([]byte, bytes)
 
 	_, err := rand.Read(b)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	s := base64.StrEncoding.EncodeToString(b)
+	s := base64.StdEncoding.EncodeToString(b)
 
 	return s, nil
 }

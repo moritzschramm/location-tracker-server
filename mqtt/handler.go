@@ -80,13 +80,11 @@ func (handler *SubHandler) BatteryInfoCallback(client MQTT.Client, message MQTT.
 func (handler *SubHandler) ControlSettingsCallback(client MQTT.Client, message MQTT.Message) {
 
 	// message contains battery info in format <opMode>,<alarmEnabled>,<updateFrequency>,<RFEnabled>
-	m := strings.Split(string(message.Payload()), ",")
-
+	//m := strings.Split(string(message.Payload()), ",")
 
 	// TODO
 }
 
 func (handler *SubHandler) AlarmCallback(client MQTT.Client, message MQTT.Message) {
-
 
 }
