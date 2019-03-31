@@ -12,7 +12,7 @@ const (
 	QUERY_DEVICE_BY_ID = "SELECT uuid, created_at FROM devices WHERE device_id == ?"
 	QUERY_ALL_DEVICES  = "SELECT device_id, uuid, created_at FROM devices"
 	INSERT_DEVICE      = "INSERT INTO devices (uuid, password, created_at) VALUES (?, ?, ?)"
-	DELETE_DEVICE      = "DELETE FROM devices WHERE uuid = '?'"
+	DELETE_DEVICE      = "DELETE FROM devices WHERE uuid = ?"
 )
 
 type Device struct {

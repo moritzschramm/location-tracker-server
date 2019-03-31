@@ -11,7 +11,7 @@ import (
 const (
 	TOKEN_SIZE = 256
 
-	QUERY_TOKEN          = "SELECT id, device_id, created_at, expires_at FROM tokens WHERE token = '?' AND expires_at <= ?"
+	QUERY_TOKEN          = "SELECT id, device_id, created_at, expires_at FROM tokens WHERE token = ? AND expires_at <= ?"
 	QUERY_DEVICE_BY_UUID = "SELECT device_id, password FROM devices WHERE uuid == ?"
 	INSERT_TOKEN         = "INSERT INTO tokens (device_id, token, created_at, expires_at) VALUES (?, ?, ?, ?)"
 	DELETE_TOKEN         = "DELETE FROM tokens WHERE id == ?"
