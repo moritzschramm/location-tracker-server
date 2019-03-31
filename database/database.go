@@ -17,7 +17,7 @@ const (
 	DB_FILE_SQLITE = "database/vault.db"
 	DB_INIT_STMT   = "database/init_database.sql"
 
-	QUERY_ADMIN  = "SELECT device_id FROM devices WHERE uuid = '?'"
+	QUERY_ADMIN  = "SELECT device_id FROM devices WHERE uuid = ?"
 	INSERT_ADMIN = "INSERT INTO devices (device_id, uuid, password, created_at) VALUES (?, ?, ?, ?)"
 )
 
@@ -38,7 +38,7 @@ func SetupDatabase(config config.Config) *sql.DB {
 	// init database tables
 	err = initTables(db, config)
 	if err != nil {
-		log.Fatal("Error executing init statement: ", err.Error())
+		log.Fatal("Error executing database init statement: ", err.Error())
 	}
 
 	return db
@@ -73,12 +73,12 @@ func initTables(db *sql.DB, config config.Config) error {
 	err = db.QueryRow(QUERY_ADMIN, config.AdminUUID).Scan(&deviceId)
 	if err != nil {
 
-		deviceId = 1
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(config.AdminPassword), bcrypt.DefaultCost)
 		if err != nil {
 			return err
 		}
 
+		deviceId = 1
 		_, err = db.Exec(INSERT_ADMIN, deviceId, config.AdminUUID, hashedPassword, time.Now())
 		if err != nil {
 			return err

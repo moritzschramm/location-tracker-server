@@ -40,5 +40,5 @@ CREATE TABLE IF NOT EXISTS `control_settings` (
     `alarm_enabled` INTEGER NOT NULL,
     `update_frequency` INTEGER NOT NULL,
     `rf_enabled` INTEGER NOT NULL,
-    `updated_at` DATETIME NOT NULL,
+    `updated_at` DATETIME NOT NULL
 );
