@@ -20,9 +20,7 @@ func SetupAPI(db *sql.DB, mqttClient MQTT.Client, config config.Config) {
 
 	// serve static files
 	staticFileHandler := &StaticFileHandler{config}
-	router.NotFound = http.HandlerFunc(staticFileHandler.NotFoundHandler)
-	router.GET("/", staticFileHandler.ServeSinglePageApplication)
-	router.ServeFiles("/assets/*filepath", http.Dir(config.PublicDir+"/assets"))
+	staticFileHandler.SetupRoutes(router)
 
 	// api routes
 	deviceController := &DeviceController{DB: db, Mqtt: config.MQTT}
