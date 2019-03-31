@@ -73,6 +73,7 @@ func setupMQTTSubscriptions(db *sql.DB, client MQTT.Client) {
 		handler := &SubHandler{
 			DB:     db,
 			Device: device,
+			Client: client,
 		}
 
 		handler.SubscribeTo("/location", handler.LocationCallback)
