@@ -25,7 +25,7 @@ func (controller *AuthController) AuthenticationMiddleware(res http.ResponseWrit
 		tokenCookie, err := req.Cookie("token")
 		if err != nil {
 
-			log.Println("Unauthorized acces attempt (no token) by ", req.RemoteAddr, req.UserAgent())
+			log.Println("Unauthorized acces attempt (no token) by ", req.RemoteAddr, req.UserAgent(), err.Error())
 			http.Error(res, "Unauthorized", 401)
 			return
 		}
@@ -34,7 +34,7 @@ func (controller *AuthController) AuthenticationMiddleware(res http.ResponseWrit
 		token, err := model.GetAuthToken(controller.DB, tokenCookie.Value)
 		if err != nil {
 
-			log.Println("Unauthorized acces attempt (wrong token) by ", req.RemoteAddr, req.UserAgent())
+			log.Println("Unauthorized acces attempt (wrong token) by ", req.RemoteAddr, req.UserAgent(), err.Error())
 			http.Error(res, "Forbidden", 403)
 			return
 		}
@@ -43,7 +43,7 @@ func (controller *AuthController) AuthenticationMiddleware(res http.ResponseWrit
 		device, err := model.GetDevice(controller.DB, token.DeviceId)
 		if err != nil {
 
-			log.Println("Unauthorized access attempt by ", req.RemoteAddr, req.UserAgent())
+			log.Println("Unauthorized access attempt by ", req.RemoteAddr, req.UserAgent(), err.Error())
 			http.Error(res, "Forbidden", 403)
 			return
 
@@ -84,13 +84,7 @@ func (controller *AuthController) Login(res http.ResponseWriter, req *http.Reque
 		return
 	}
 
-	http.SetCookie(res, &http.Cookie{
-		Name:     "token",
-		Value:    token.Token,
-		Expires:  token.ExpiresAt,
-		Secure:   true,
-		HttpOnly: true,
-	})
+	http.SetCookie(res, token.ToCookie())
 
 	res.Write(tokenJson)
 }
@@ -99,14 +93,8 @@ func (controller *AuthController) Logout(res http.ResponseWriter, req *http.Requ
 
 	token := req.Context().Value("token").(*model.AuthToken)
 
+	http.SetCookie(res, token.UnsetCookie())
 	token.Logout()
-
-	http.SetCookie(res, &http.Cookie{
-		Name:     "token",
-		Value:    "",
-		Secure:   true,
-		HttpOnly: true,
-	})
 
 	res.WriteHeader(http.StatusOK)
 }
@@ -129,13 +117,7 @@ func (controller *AuthController) TokenRefresh(res http.ResponseWriter, req *htt
 		return
 	}
 
-	http.SetCookie(res, &http.Cookie{
-		Name:     "token",
-		Value:    token.Token,
-		Expires:  token.ExpiresAt,
-		Secure:   true,
-		HttpOnly: true,
-	})
+	http.SetCookie(res, token.ToCookie())
 
 	res.Write(tokenJson)
 }

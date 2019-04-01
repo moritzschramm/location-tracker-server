@@ -5,16 +5,18 @@ import (
 	"database/sql"
 	"encoding/base64"
 	"golang.org/x/crypto/bcrypt"
+	"net/http"
 	"time"
 )
 
 const (
-	TOKEN_SIZE = 256
+	SECURE_COOKIE = false // TODO enable for production
+	TOKEN_SIZE    = 256
 
-	QUERY_TOKEN          = "SELECT id, device_id, created_at, expires_at FROM tokens WHERE token = ? AND expires_at <= ?"
-	QUERY_DEVICE_BY_UUID = "SELECT device_id, password FROM devices WHERE uuid == ?"
+	QUERY_TOKEN          = "SELECT id, device_id, created_at, expires_at FROM tokens WHERE token = ? AND expires_at >= ?"
+	QUERY_DEVICE_BY_UUID = "SELECT device_id, password FROM devices WHERE uuid = ?"
 	INSERT_TOKEN         = "INSERT INTO tokens (device_id, token, created_at, expires_at) VALUES (?, ?, ?, ?)"
-	DELETE_TOKEN         = "DELETE FROM tokens WHERE id == ?"
+	DELETE_TOKEN         = "DELETE FROM tokens WHERE id = ?"
 )
 
 type AuthToken struct {
@@ -26,14 +28,43 @@ type AuthToken struct {
 	ExpiresAt time.Time `json:"expiresAt"`
 }
 
+func (token *AuthToken) MaxAge() int {
+
+	return int(time.Until(token.ExpiresAt).Seconds())
+}
+
+func (token *AuthToken) ToCookie() *http.Cookie {
+
+	return &http.Cookie{
+		Name:     "token",
+		Value:    token.Token,
+		Path:     "/",
+		SameSite: http.SameSiteStrictMode,
+		Expires:  token.ExpiresAt,
+		Secure:   SECURE_COOKIE,
+		HttpOnly: true,
+	}
+}
+
+func (token *AuthToken) UnsetCookie() *http.Cookie {
+
+	return &http.Cookie{
+		Name:     "token",
+		Value:    "",
+		Path:     "/",
+		SameSite: http.SameSiteStrictMode,
+		MaxAge:   -1,
+		Secure:   SECURE_COOKIE,
+		HttpOnly: true,
+	}
+}
+
 func (token *AuthToken) Logout() error {
 
 	_, err := token.DB.Exec(DELETE_TOKEN, token.Id)
 	if err != nil {
 		return err
 	}
-
-	token = nil
 
 	return nil
 }
@@ -80,6 +111,7 @@ func GetAuthToken(db *sql.DB, token string) (*AuthToken, error) {
 	}
 
 	return &AuthToken{
+		DB:        db,
 		Id:        id,
 		DeviceId:  deviceId,
 		Token:     token,
