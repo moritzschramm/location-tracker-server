@@ -3,6 +3,8 @@ port = "8000"
 publicDir = "frontend"
 adminUUID = ""	# needs to be UUIDv4
 adminPassword = ""
+certFile = "certs/server.crt"
+keyFile = "certs/server.key"
 
 [mqtt]
 host = ""

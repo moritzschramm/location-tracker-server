@@ -41,7 +41,7 @@ openssl genrsa -out server.key $CERT_BITS							# generete server key
 openssl req -out server.csr -key server.key -new -subj $CN_SUBJ 	# generate a certificate signing request to send to the CA
 openssl x509 -req -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out server.crt -days $CERT_DAYS # sign server key
 rm server.csr
-cp server.crt certs/
+cp server.* certs/
 mv ca.* /etc/mosquitto/certs # copy created certificates
 mv server.* /etc/mosquitto/certs
 

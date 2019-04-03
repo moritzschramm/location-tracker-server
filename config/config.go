@@ -19,6 +19,8 @@ type Config struct {
 	PublicDir     string
 	AdminUUID     string
 	AdminPassword string
+	CertFile      string
+	KeyFile       string
 }
 
 func LoadConfig() Config {

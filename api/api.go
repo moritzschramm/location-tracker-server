@@ -43,6 +43,6 @@ func SetupAPI(db *sql.DB, mqttClient MQTT.Client, config config.Config) {
 	server.Use(negroni.HandlerFunc(authController.AuthenticationMiddleware))
 	server.UseHandler(router)
 
-	log.Println("Starting server on http://" + config.Host + ":" + config.Port)
-	log.Fatal(http.ListenAndServe(":"+config.Port, server))
+	log.Println("Starting server on https://" + config.Host + ":" + config.Port)
+	log.Fatal(http.ListenAndServeTLS(":"+config.Port, config.CertFile, config.KeyFile, server))
 }
