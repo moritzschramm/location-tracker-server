@@ -14,7 +14,7 @@ import (
 func (controller *Controller) NewDevice(res http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 
 	// check authorization
-	if !controller.CheckIfAdmin(req) {
+	if !controller.CheckIfAdmin(res, req) {
 		return
 	}
 
@@ -57,9 +57,9 @@ func (controller *Controller) NewDevice(res http.ResponseWriter, req *http.Reque
 func (controller *Controller) DeleteDevice(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 
 	// check authorization
-	if !controller.CheckIfAdmin(req) {
+	if !controller.CheckIfAdmin(res, req) {
 		return
-	} 
+	}
 
 	// delete device
 	uid := params.ByName("uid")

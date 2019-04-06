@@ -124,10 +124,9 @@ func (controller *Controller) TokenRefresh(res http.ResponseWriter, req *http.Re
 	res.Write(tokenJson)
 }
 
-
 // checks if request was performed by admin user (device)
 // automatically logs unauthorized access and generates HTTP response
-func (controller *Controller) CheckIfAdmin(req *http.Request) bool {
+func (controller *Controller) CheckIfAdmin(res http.ResponseWriter, req *http.Request) bool {
 
 	user := req.Context().Value("device").(*model.Device)
 	if user.UUID.String() != controller.Config.AdminUUID {

@@ -14,13 +14,15 @@ import (
 )
 
 const (
-	DB_FILE_SQLITE = "database/vault.db"
-	DB_INIT_STMT   = "database/init_database.sql"
+	DB_INIT_STMT  = "database/init_database.sql"
+	DB_DSN_SQLITE = "database/vault.db"
+	DB_DSN_MYSQL  = "vault:secret@(mysql)/vault?parseTime=true"
 
 	QUERY_ADMIN  = "SELECT device_id FROM devices WHERE uuid = ?"
 	INSERT_ADMIN = "INSERT INTO devices (device_id, uuid, password, created_at) VALUES (?, ?, ?, ?)"
 )
 
+// open and check database connection and init tables
 func Setup(config config.Config) *sql.DB {
 
 	// create database interface
@@ -46,14 +48,16 @@ func Setup(config config.Config) *sql.DB {
 
 func openWithSQLite3Driver() (*sql.DB, error) {
 
-	return sql.Open("sqlite3", DB_FILE_SQLITE)
+	return sql.Open("sqlite3", DB_DSN_SQLITE)
 }
 
 func openWithMySQLDriver() (*sql.DB, error) { // if in use, uncomment driver import
 
-	return sql.Open("mysql", "vault:secret@(mysql)/vault?parseTime=true")
+	return sql.Open("mysql", DB_DSN_MYSQL)
 }
 
+// execute init database sql statement (to create tables)
+// and insert admin user as specified in config file
 func initTables(db *sql.DB, config config.Config) error {
 
 	// read init statement from file DB_INIT_STMT

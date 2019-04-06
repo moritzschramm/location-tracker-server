@@ -23,6 +23,7 @@ type Config struct {
 	KeyFile       string
 }
 
+// create Config object by reading toml config file
 func Load() Config {
 
 	var config Config

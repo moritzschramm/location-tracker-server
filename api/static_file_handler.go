@@ -21,7 +21,6 @@ func (c *Controller) SetupStaticRoutes(router *httprouter.Router) {
 	router.ServeFiles("/assets/*filepath", http.Dir(c.Config.PublicDir+"/dist/assets"))
 }
 
-
 func (c *Controller) NotFoundHandler(res http.ResponseWriter, req *http.Request) {
 
 	http.ServeFile(res, req, c.Config.PublicDir+"/404.html")
