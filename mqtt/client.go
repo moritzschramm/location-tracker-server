@@ -13,6 +13,7 @@ import (
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 )
 
+// connect to MQTT broker and setup subscriptions
 func Setup(db *sql.DB, config Config) MQTT.Client {
 
 	client := connectClient(config)

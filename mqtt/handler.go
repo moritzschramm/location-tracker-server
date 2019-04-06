@@ -11,12 +11,14 @@ import (
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 )
 
+// a sub handler deals with all subscription messages for a specific device
 type SubHandler struct {
 	DB     *sql.DB
 	Device *model.Device
 	Client MQTT.Client
 }
 
+// subscribes to a specified topic with QoS level 1
 func (handler *SubHandler) SubscribeTo(topic string, callback MQTT.MessageHandler) {
 
 	token := handler.Client.Subscribe(handler.Device.UUID.String()+topic, 1, callback)
