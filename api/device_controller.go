@@ -1,23 +1,22 @@
 package api
 
 import (
-	"database/sql"
 	"encoding/json"
 	"log"
 	"net/http"
 
 	"github.com/moritzschramm/location-tracker-server/model"
-	"github.com/moritzschramm/location-tracker-server/mqtt"
 
 	"github.com/julienschmidt/httprouter"
 )
 
-type DeviceController struct {
-	DB   *sql.DB
-	Mqtt mqtt.Config
-}
+// create new device in database
+func (controller *Controller) NewDevice(res http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 
-func (controller *DeviceController) NewDevice(res http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+	// check authorization
+	if !controller.CheckIfAdmin(req) {
+		return
+	}
 
 	// check password
 	password := req.FormValue("password")
@@ -54,10 +53,16 @@ func (controller *DeviceController) NewDevice(res http.ResponseWriter, req *http
 	res.Write(deviceJson)
 }
 
-func (controller *DeviceController) DeleteDevice(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+// delete device from database
+func (controller *Controller) DeleteDevice(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 
+	// check authorization
+	if !controller.CheckIfAdmin(req) {
+		return
+	} 
+
+	// delete device
 	uid := params.ByName("uid")
-
 	err := model.DeleteDeviceByUUID(controller.DB, uid)
 
 	if err != nil {
@@ -66,12 +71,15 @@ func (controller *DeviceController) DeleteDevice(res http.ResponseWriter, req *h
 		err := controller.Mqtt.DeleteUser(uid)
 		if err != nil {
 			log.Println("Error deleting user from mosquitto: ", err.Error())
+			http.Error(res, "Internal Server Error", 500)
+			return
 		}
 
 		res.WriteHeader(http.StatusOK)
 
 	} else {
 
+		log.Println("Error deleting device from database: ", err.Error())
 		res.WriteHeader(http.StatusNotFound)
 	}
 }

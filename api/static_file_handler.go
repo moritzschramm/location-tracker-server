@@ -4,39 +4,39 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/moritzschramm/location-tracker-server/config"
-
 	"github.com/julienschmidt/httprouter"
 )
 
-type StaticFileHandler struct {
-	Config config.Config
+// setup all static routes for httprouter
+// index, favicon and robots.txt are set explicitly
+// all files in /assets/* get served from <PublicDir>/dist/assets
+func (c *Controller) SetupStaticRoutes(router *httprouter.Router) {
+
+	router.NotFound = http.HandlerFunc(c.NotFoundHandler)
+
+	router.GET("/", c.ServeFile("index.html"))
+	router.GET("/favicon.ico", c.ServeFile("favicon.ico"))
+	router.GET("/robots.txt", c.ServeFile("robots.txt"))
+
+	router.ServeFiles("/assets/*filepath", http.Dir(c.Config.PublicDir+"/dist/assets"))
 }
 
-func (h *StaticFileHandler) SetupRoutes(router *httprouter.Router) {
 
-	router.NotFound = http.HandlerFunc(h.NotFoundHandler)
+func (c *Controller) NotFoundHandler(res http.ResponseWriter, req *http.Request) {
 
-	router.GET("/", h.ServeFile("index.html"))
-	router.GET("/favicon.ico", h.ServeFile("favicon.ico"))
-	router.GET("/robots.txt", h.ServeFile("robots.txt"))
-
-	router.ServeFiles("/assets/*filepath", http.Dir(h.Config.PublicDir+"/dist/assets"))
+	http.ServeFile(res, req, c.Config.PublicDir+"/404.html")
 }
 
-func (h *StaticFileHandler) NotFoundHandler(res http.ResponseWriter, req *http.Request) {
-
-	http.ServeFile(res, req, h.Config.PublicDir+"/404.html")
-}
-
-func (h *StaticFileHandler) ServeFile(filename string) func(http.ResponseWriter, *http.Request, httprouter.Params) {
+// helper function to serve files
+func (c *Controller) ServeFile(filename string) func(http.ResponseWriter, *http.Request, httprouter.Params) {
 
 	return func(res http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 
-		http.ServeFile(res, req, h.Config.PublicDir+"/dist/"+filename)
+		http.ServeFile(res, req, c.Config.PublicDir+"/dist/"+filename)
 	}
 }
 
+// header middleware sets correct headers depending on request URI
 func HeaderMiddleware(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 
 	res.Header().Set("x-frame-options", "SAMEORIGIN")

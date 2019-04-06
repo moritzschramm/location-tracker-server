@@ -1,7 +1,6 @@
 package api
 
 import (
-	"database/sql"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -12,14 +11,12 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-type LocationController struct {
-	DB *sql.DB
-}
-
-func (controller *LocationController) GetLocations(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+// return all locations in specified time frame
+func (controller *Controller) GetLocations(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 
 	device := req.Context().Value("device").(*model.Device)
 
+	// parse from and to datetimes
 	from, err := time.Parse(time.RFC3339, params.ByName("from"))
 	if err != nil {
 		http.Error(res, "'from' parameter malformed", 400)

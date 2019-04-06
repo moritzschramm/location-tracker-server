@@ -23,7 +23,7 @@ type Config struct {
 	KeyFile       string
 }
 
-func LoadConfig() Config {
+func Load() Config {
 
 	var config Config
 

@@ -21,7 +21,7 @@ const (
 	INSERT_ADMIN = "INSERT INTO devices (device_id, uuid, password, created_at) VALUES (?, ?, ?, ?)"
 )
 
-func SetupDatabase(config config.Config) *sql.DB {
+func Setup(config config.Config) *sql.DB {
 
 	// create database interface
 	db, err := openWithSQLite3Driver()

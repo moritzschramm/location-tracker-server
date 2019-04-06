@@ -13,7 +13,7 @@ import (
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 )
 
-func SetupMQTTClient(db *sql.DB, config Config) MQTT.Client {
+func Setup(db *sql.DB, config Config) MQTT.Client {
 
 	client := connectClient(config)
 

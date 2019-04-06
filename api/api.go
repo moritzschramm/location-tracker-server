@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/moritzschramm/location-tracker-server/config"
+	"github.com/moritzschramm/location-tracker-server/mqtt"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/urfave/negroni"
@@ -13,36 +14,50 @@ import (
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 )
 
-func SetupAPI(db *sql.DB, mqttClient MQTT.Client, config config.Config) {
+// controller handles API calls and serves static files
+// has database and configuration access
+type Controller struct {
+	DB     *sql.DB
+	Config config.Config
+	Mqtt   mqtt.Config
+}
 
-	// setup router
+// setup router and middleware and start server
+// router handles static files and API calls
+func Setup(db *sql.DB, mqttClient MQTT.Client, config config.Config) {
+
 	router := httprouter.New()
+	controller := &Controller{
+		DB:     db,
+		Config: config,
+		Mqtt:   config.MQTT,
+	}
 
 	// serve static files
-	staticFileHandler := &StaticFileHandler{config}
-	staticFileHandler.SetupRoutes(router)
+	controller.SetupStaticRoutes(router)
 
 	// api routes
-	deviceController := &DeviceController{DB: db, Mqtt: config.MQTT}
-	router.POST("/api/device/new", deviceController.NewDevice)
-	router.POST("/api/device/delete/:uid", deviceController.DeleteDevice)
+	// device
+	router.POST("/api/device/new", controller.NewDevice)
+	router.POST("/api/device/delete/:uid", controller.DeleteDevice)
 
-	locationController := &LocationController{DB: db}
-	router.POST("/api/location/:from/:to", locationController.GetLocations)
+	// location
+	router.POST("/api/location/:from/:to", controller.GetLocations)
 
-	authController := &AuthController{DB: db}
-	router.POST("/api/login", authController.Login)
-	router.POST("/api/logout", authController.Logout)
-	router.POST("/api/refresh", authController.TokenRefresh)
+	// authentication
+	router.POST("/api/login", controller.Login)
+	router.POST("/api/logout", controller.Logout)
+	router.POST("/api/refresh", controller.TokenRefresh)
 
 	// setup negroni middleware
 	server := negroni.New()
 	server.Use(negroni.NewLogger())
 	server.Use(negroni.NewRecovery())
 	server.Use(negroni.HandlerFunc(HeaderMiddleware))
-	server.Use(negroni.HandlerFunc(authController.AuthenticationMiddleware))
+	server.Use(negroni.HandlerFunc(controller.AuthenticationMiddleware))
 	server.UseHandler(router)
 
+	// start TLS encrypted server
 	log.Println("Starting server on https://" + config.Host + ":" + config.Port)
 	log.Fatal(http.ListenAndServeTLS(":"+config.Port, config.CertFile, config.KeyFile, server))
 }

@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -13,11 +12,9 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-type AuthController struct {
-	DB *sql.DB
-}
-
-func (controller *AuthController) AuthenticationMiddleware(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
+// authentication middleware checks if all calls to the API (except login) are authenticated
+// static files are always served
+func (controller *Controller) AuthenticationMiddleware(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 
 	if strings.HasPrefix(req.URL.Path, "/api") && req.URL.Path != "/api/login" {
 
@@ -62,7 +59,9 @@ func (controller *AuthController) AuthenticationMiddleware(res http.ResponseWrit
 	}
 }
 
-func (controller *AuthController) Login(res http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+// login handler, if correct UUID and password are entered,
+// user gets logged in (receives token, also set via HTTP cookie)
+func (controller *Controller) Login(res http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 
 	uid := req.FormValue("uuid")
 	password := req.FormValue("password")
@@ -89,7 +88,8 @@ func (controller *AuthController) Login(res http.ResponseWriter, req *http.Reque
 	res.Write(tokenJson)
 }
 
-func (controller *AuthController) Logout(res http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+// logout handler, removes cookie and token from database
+func (controller *Controller) Logout(res http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 
 	token := req.Context().Value("token").(*model.AuthToken)
 
@@ -99,7 +99,9 @@ func (controller *AuthController) Logout(res http.ResponseWriter, req *http.Requ
 	res.WriteHeader(http.StatusOK)
 }
 
-func (controller *AuthController) TokenRefresh(res http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+// refreshes old (but not expired) token and returns new token to user
+// old token is not usable after refresh
+func (controller *Controller) TokenRefresh(res http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 
 	token := req.Context().Value("token").(*model.AuthToken)
 
@@ -120,4 +122,18 @@ func (controller *AuthController) TokenRefresh(res http.ResponseWriter, req *htt
 	http.SetCookie(res, token.ToCookie())
 
 	res.Write(tokenJson)
+}
+
+
+// checks if request was performed by admin user (device)
+// automatically logs unauthorized access and generates HTTP response
+func (controller *Controller) CheckIfAdmin(req *http.Request) bool {
+
+	user := req.Context().Value("device").(*model.Device)
+	if user.UUID.String() != controller.Config.AdminUUID {
+		log.Println("Unauthorized attempt to create new device by ", req.RemoteAddr, req.UserAgent())
+		http.Error(res, "Unauthorized", 403)
+		return false
+	}
+	return true
 }

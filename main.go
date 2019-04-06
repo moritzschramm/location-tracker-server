@@ -9,12 +9,12 @@ import (
 
 func main() {
 
-	config := config.LoadConfig()
+	config := config.Load()
 
-	db := database.SetupDatabase(config)
+	db := database.Setup(config)
 	defer db.Close()
 
-	mqttClient := mqtt.SetupMQTTClient(db, config.MQTT)
+	mqttClient := mqtt.Setup(db, config.MQTT)
 
-	api.SetupAPI(db, mqttClient, config)
+	api.Setup(db, mqttClient, config)
 }
