@@ -37,6 +37,11 @@ func Setup(db *sql.DB, mqttClient MQTT.Client, config config.Config) {
 	controller.SetupStaticRoutes(router)
 
 	// api routes
+	// authentication
+	router.POST("/api/login", controller.Login)
+	router.POST("/api/logout", controller.Logout)
+	router.POST("/api/refresh", controller.TokenRefresh)
+
 	// device
 	router.POST("/api/device/new", controller.NewDevice)
 	router.POST("/api/device/delete/:uid", controller.DeleteDevice)
@@ -44,10 +49,8 @@ func Setup(db *sql.DB, mqttClient MQTT.Client, config config.Config) {
 	// location
 	router.POST("/api/location/:from/:to", controller.GetLocations)
 
-	// authentication
-	router.POST("/api/login", controller.Login)
-	router.POST("/api/logout", controller.Logout)
-	router.POST("/api/refresh", controller.TokenRefresh)
+	// battery
+	router.POST("/api/battery/:from/:to", controller.GetBatteryInfo)
 
 	// setup negroni middleware
 	server := negroni.New()

@@ -11,8 +11,8 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-// return all locations in specified time frame
-func (controller *Controller) GetLocations(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+// return battery info for specified time frame
+func (controller *Controller) GetBatteryInfo(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 
 	device := req.Context().Value("device").(*model.Device)
 
@@ -27,19 +27,19 @@ func (controller *Controller) GetLocations(res http.ResponseWriter, req *http.Re
 		http.Error(res, "'to' parameter malformed", 400)
 	}
 
-	locations, err := model.GetLocations(controller.DB, device.DeviceId, from, to)
+	batteryInfo, err := model.GetBatteryInfo(controller.DB, device.DeviceId, from, to)
 	if err != nil {
-		log.Println("Error retrieving locations: ", err.Error())
+		log.Println("Error retrieving battery info: ", err.Error())
 		http.Error(res, "Internal Server Error", 500)
 		return
 	}
 
-	locationsJson, err := json.Marshal(locations)
+	batteryInfoJson, err := json.Marshal(batteryInfo)
 	if err != nil {
-		log.Println("Json: Error parsing locations: ", err.Error())
+		log.Println("Json: Error parsing battery info: ", err.Error())
 		http.Error(res, "Internal Server Error", 500)
 		return
 	}
 
-	res.Write(locationsJson)
+	res.Write(batteryInfoJson)
 }
