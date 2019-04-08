@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	SECURE_COOKIE = false 	// TODO enable for production
-	TOKEN_SIZE    = 256		// token size in bits
+	SECURE_COOKIE = false // TODO enable for production
+	TOKEN_SIZE    = 256   // token size in bits
 
 	QUERY_TOKEN          = "SELECT id, device_id, created_at, expires_at FROM tokens WHERE token = ? AND expires_at >= ?"
 	QUERY_DEVICE_BY_UUID = "SELECT device_id, password FROM devices WHERE uuid = ?"
