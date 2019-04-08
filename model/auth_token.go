@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	SECURE_COOKIE = false // TODO enable for production
-	TOKEN_SIZE    = 256
+	SECURE_COOKIE = false 	// TODO enable for production
+	TOKEN_SIZE    = 256		// token size in bits
 
 	QUERY_TOKEN          = "SELECT id, device_id, created_at, expires_at FROM tokens WHERE token = ? AND expires_at >= ?"
 	QUERY_DEVICE_BY_UUID = "SELECT device_id, password FROM devices WHERE uuid = ?"
@@ -28,11 +28,13 @@ type AuthToken struct {
 	ExpiresAt time.Time `json:"expiresAt"`
 }
 
+// return max age in seconds until auth token expires
 func (token *AuthToken) MaxAge() int {
 
 	return int(time.Until(token.ExpiresAt).Seconds())
 }
 
+// create cookie from auth token
 func (token *AuthToken) ToCookie() *http.Cookie {
 
 	return &http.Cookie{
@@ -46,6 +48,7 @@ func (token *AuthToken) ToCookie() *http.Cookie {
 	}
 }
 
+// create (empty) cookie to unset token
 func (token *AuthToken) UnsetCookie() *http.Cookie {
 
 	return &http.Cookie{
@@ -59,6 +62,7 @@ func (token *AuthToken) UnsetCookie() *http.Cookie {
 	}
 }
 
+// make auth token invalid
 func (token *AuthToken) Logout() error {
 
 	_, err := token.DB.Exec(DELETE_TOKEN, token.Id)
@@ -69,6 +73,8 @@ func (token *AuthToken) Logout() error {
 	return nil
 }
 
+// refresh auth token
+// old token will be invalid, new token will be returned
 func (token *AuthToken) Refresh() (*AuthToken, error) {
 
 	db := token.DB
@@ -80,6 +86,8 @@ func (token *AuthToken) Refresh() (*AuthToken, error) {
 	return createNewToken(db, deviceId)
 }
 
+// authenticate device (check UUID and password)
+// return auth token if authentication succesful
 func AuthDevice(db *sql.DB, uid, password string) (*AuthToken, error) {
 
 	// get password of device with uuid from database
@@ -99,6 +107,7 @@ func AuthDevice(db *sql.DB, uid, password string) (*AuthToken, error) {
 	return createNewToken(db, deviceId)
 }
 
+// get auth token from database by token
 func GetAuthToken(db *sql.DB, token string) (*AuthToken, error) {
 
 	var id int
@@ -120,6 +129,7 @@ func GetAuthToken(db *sql.DB, token string) (*AuthToken, error) {
 	}, nil
 }
 
+// create random token, create and insert auth token into database
 func createNewToken(db *sql.DB, deviceId int) (*AuthToken, error) {
 
 	// create new random token (256 bit long)
@@ -137,6 +147,7 @@ func createNewToken(db *sql.DB, deviceId int) (*AuthToken, error) {
 		return nil, err
 	}
 
+	// get id of auth token
 	id, err := result.LastInsertId()
 	if err != nil {
 		return nil, err
@@ -154,6 +165,7 @@ func createNewToken(db *sql.DB, deviceId int) (*AuthToken, error) {
 	return token, nil
 }
 
+// helper function to generate random token
 func generateRandomToken(bytes int) (string, error) {
 
 	b := make([]byte, bytes)

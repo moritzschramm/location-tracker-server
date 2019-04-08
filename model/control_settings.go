@@ -25,6 +25,8 @@ type ControlSettings struct {
 	RFEnabled       bool `json:"RFEnabled"`
 }
 
+// update control settings in database
+// insert new control settings if not exists
 func (settings *ControlSettings) Update() error {
 
 	err := settings.DB.QueryRow(QUERY_CONTROL_SETTINGS, settings.DeviceId).Scan()

@@ -18,13 +18,16 @@ type BatteryInfo struct {
 	Time       time.Time `json:"time"`
 }
 
+// create new battery info in database
 func MakeBatteryInfo(db *sql.DB, deviceId, percentage int, time time.Time) (*BatteryInfo, error) {
 
+	// insert battery info
 	result, err := db.Exec(INSERT_BATTERY_INFO, deviceId, percentage, time)
 	if err != nil {
 		return nil, err
 	}
 
+	// get id of info
 	id, err := result.LastInsertId()
 	if err != nil {
 		return nil, err
@@ -39,16 +42,19 @@ func MakeBatteryInfo(db *sql.DB, deviceId, percentage int, time time.Time) (*Bat
 	}, nil
 }
 
+// return battery infos in specified time frame
 func GetBatteryInfo(db *sql.DB, deviceId int, from, to time.Time) ([]*BatteryInfo, error) {
 
 	var infos []*BatteryInfo
 
+	// query all infos
 	rows, err := db.Query(QUERY_BATTERY_INFO, deviceId, from, to)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
+	// append to infos slice
 	for rows.Next() {
 
 		info := &BatteryInfo{}

@@ -22,6 +22,7 @@ type Device struct {
 	CreatedAt time.Time `json:"createdAt"`
 }
 
+// create new device in database
 func MakeDevice(db *sql.DB, password []byte) (*Device, error) {
 
 	// create UUID and hash password
@@ -58,6 +59,7 @@ func MakeDevice(db *sql.DB, password []byte) (*Device, error) {
 	}, nil
 }
 
+// return device by deviceId
 func GetDevice(db *sql.DB, deviceId int) (*Device, error) {
 
 	var uidString string
@@ -77,6 +79,7 @@ func GetDevice(db *sql.DB, deviceId int) (*Device, error) {
 	}, nil
 }
 
+// return all devices in database (including admin device)
 func GetAllDevices(db *sql.DB) ([]*Device, error) {
 
 	var devices []*Device
@@ -105,6 +108,7 @@ func GetAllDevices(db *sql.DB) ([]*Device, error) {
 	return devices, nil
 }
 
+// delete device from database by UUID (not deviceId)
 func DeleteDeviceByUUID(db *sql.DB, uid string) error {
 
 	_, err := db.Exec(DELETE_DEVICE, uid)
