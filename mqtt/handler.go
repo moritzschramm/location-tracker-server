@@ -32,6 +32,11 @@ func (handler *SubHandler) LocationCallback(client MQTT.Client, message MQTT.Mes
 	// message contains latitude and longitude in format <lat>,<long>,<time>
 	m := strings.Split(string(message.Payload()), ",")
 
+	if len(m) != 3 {
+		log.Println("Error parsing message (location)")
+		return
+	}
+
 	lat, err := strconv.ParseFloat(m[0], 64)
 	if err != nil {
 		log.Println("Error parsing latitude: ", m[0], err.Error())
@@ -59,6 +64,11 @@ func (handler *SubHandler) BatteryInfoCallback(client MQTT.Client, message MQTT.
 
 	// message contains battery info in format <percentage>,<time>
 	m := strings.Split(string(message.Payload()), ",")
+
+	if len(m) != 2 {
+		log.Println("Error parsing message (battery info)")
+		return
+	}
 
 	percentage, err := strconv.ParseInt(m[0], 10, 32)
 	if err != nil {
